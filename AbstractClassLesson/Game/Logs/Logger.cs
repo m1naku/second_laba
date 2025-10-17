@@ -4,41 +4,91 @@ using AbstractClassLesson.Game.Logs;
 using AbstractClassLesson.Persistence;
 
 
-public class Logger
+// Выполнить функциональную декомпозицию при помощи интерфейсов
+// Сделать логгер универсальным
+
+public interface ILogger
 {
-    public Logger(Action<string> logAction)
+    bool Log(string message);
+}
+
+public class FileLogger : ILogger
+{
+    private string _filePath;
+    public bool Log(string message)
+    {
+        if (message != null && !string.IsNullOrEmpty(message))
+        {
+            if (File.Exists(_filePath))
+            {
+                File.AppendAllText(_filePath, message + Environment.NewLine);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+    public bool CheckExistance(string filePath)
+    {
+        return File.Exists(filePath);
+    }
+    public void AddNewFilePath(string filePath)
+    {
+        _filePath = filePath;
+    }
+    public bool GenerateFileByPath()
+    {
+        if (!File.Exists(_filePath))
+        {
+            File.Create(_filePath);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+}
+
+public class ConsoleLogger : ILogger
+{
+    public ConsoleLogger(Action<string> logAction)
     {
         _logAction = logAction;
     }
+    
     private readonly Action<string> _logAction;
-
-    public void Log(string logMessage)
+    
+    
+    public bool Log(string logMessage)
     {
         _logAction(logMessage);
+        return true;
+    }
+}
+
+public class LoggerObserver : ILogger
+{
+    private readonly List<ILogger> _loggers = [];
+
+    public LoggerObserver(List<ILogger> loggers)
+    {
+        _loggers = loggers;
     }
 
-    public void AttackLogByPlayer(Player player, AgressiveNpc npc)
+    public bool Log(string message)
     {
-        _logAction($"{player.Username} (Level: {player.Level} )attacks {npc.Name} ({npc.HealthPoints:F1} hp) with {player.DamagePoints} dmg.");
-    }
-    
-    public void AttackLogByNpc(Player player, AgressiveNpc npc)
-    {
-        _logAction($"{npc.Name} attacks {player.Username} ({player.HealthPoints:F1} hp) with {npc.DamagePoints} dmg.");
-    }
+        foreach (var logger in _loggers)
+        {
+            logger.Log(message);
+        }
 
-    public void AfterAttackLogByPlayer(Player player)
-    {
-        _logAction($"{player.Username} hp's after the attack: {player.HealthPoints:F1}");
-    }
-    
-    public void AfterAttackLogByNpc(AgressiveNpc npc)
-    {
-        _logAction($"{npc.Name} hp's after the attack: {npc.HealthPoints:F1}");
-    }
-
-    public void NpcIsDead(AgressiveNpc npc)
-    {
-        _logAction($"{npc.Name} is dead");
+        return true;
     }
 }

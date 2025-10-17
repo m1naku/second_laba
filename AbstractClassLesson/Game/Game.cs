@@ -6,7 +6,7 @@ namespace AbstractClassLesson.Game;
 
 public class Game
 {
-    public Game(Logger logger, Player player)
+    public Game(ILogger logger,Player player)
     {
        _logger = logger;
        _player = player;
@@ -16,7 +16,7 @@ public class Game
 
     private readonly Player _player;
 
-    private readonly Logger _logger;
+    private readonly ILogger _logger;
 
     public void Subscribe(AgressiveNpc npc)
     {
@@ -70,20 +70,20 @@ public class Game
 
     private void Attack(Player player, AgressiveNpc npc)
     {
-        _logger.AttackLogByPlayer(player, npc);
+        _logger.Log($"{player.Username} (Level: {player.Level}) attacks {npc.Name} ({npc.HealthPoints:F1} hp) with {player.DamagePoints} dmg.");
         npc.GetDamage(player.DamagePoints);
-        _logger.AfterAttackLogByNpc(npc);
+        _logger.Log($"{npc.Name} hp's after the attack: {npc.HealthPoints:F1}");
         if (npc.IsDead())
         {
-            _logger.NpcIsDead(npc);
+            _logger.Log($"{npc.Name} is dead");
             player.GetExperience(npc.ExpGranted);
             return;
         }
             
         
-        _logger.AttackLogByNpc(player, npc);
+        _logger.Log($"{npc.Name} hp's after the attack: {npc.HealthPoints:F1}");
         player.GetDamage(npc.DamagePoints);
-        _logger.AfterAttackLogByPlayer(player);
+        _logger.Log($"{player.Username} hp's after the attack: {player.HealthPoints:F1}");
     }
 }
 

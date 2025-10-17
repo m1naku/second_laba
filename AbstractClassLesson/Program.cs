@@ -2,7 +2,6 @@
 using AbstractClassLesson.Game.Logs;
 using AbstractClassLesson.Persistence;
 
-var logger = new Logger(Console.WriteLine);
 
 var npcList = new List<AgressiveNpc>();
 
@@ -21,8 +20,18 @@ var player = new Player("m1naku")
     HealthPoints = 150,
 };
 
+var fileLogger = new FileLogger();
+fileLogger.AddNewFilePath("C:/123/log.txt");
 
-var GameShell = new Game(logger, player);
+var consoleLogger = new ConsoleLogger(Console.WriteLine);
+
+var logList = new List<ILogger>();
+logList.Add(consoleLogger);
+logList.Add(fileLogger);
+
+var observerlogger = new LoggerObserver(logList);
+
+var GameShell = new Game(observerlogger, player);
 
 foreach (var npc in npcList)
 {

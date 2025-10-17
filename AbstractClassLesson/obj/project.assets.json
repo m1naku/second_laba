@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\kiruf\\RiderProjects\\AbstractClassLesson\\AbstractClassLesson\\AbstractClassLesson.csproj",
+      "projectUniqueName": "C:\\Users\\kiruf\\RiderProjects\\second_laba\\AbstractClassLesson\\AbstractClassLesson.csproj",
       "projectName": "AbstractClassLesson",
-      "projectPath": "C:\\Users\\kiruf\\RiderProjects\\AbstractClassLesson\\AbstractClassLesson\\AbstractClassLesson.csproj",
+      "projectPath": "C:\\Users\\kiruf\\RiderProjects\\second_laba\\AbstractClassLesson\\AbstractClassLesson.csproj",
       "packagesPath": "C:\\Users\\kiruf\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\kiruf\\RiderProjects\\AbstractClassLesson\\AbstractClassLesson\\obj\\",
+      "outputPath": "C:\\Users\\kiruf\\RiderProjects\\second_laba\\AbstractClassLesson\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
