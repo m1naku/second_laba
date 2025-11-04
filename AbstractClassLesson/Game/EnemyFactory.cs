@@ -18,13 +18,13 @@ public static class EnemyFactory
             {
                 Level = 1,
                 HealthPoints = 150,
-                Position = ( 10, 15 ),
+                Position = ( 15, 15 ),
             },
             EnemyType.ForestBandit => new ForestBandit(npcName)
             {
                 Level = 1,
                 HealthPoints = 100,
-                Position = ( 5, 5),
+                Position = ( 30, 30),
             },
             _ => throw new NotImplementedException("Unknown enemy type!")
         };

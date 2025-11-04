@@ -1,5 +1,7 @@
 using AbstractClassLesson.Game.Logs;
 using AbstractClassLesson.Persistence;
+using AbstractClassLesson.Persistence.Items;
+using AbstractClassLesson.Persistence.Weapon;
 
 namespace AbstractClassLesson.Game;
 
@@ -17,7 +19,7 @@ public class Game
     private readonly Player _player;
 
     private readonly ILogger _logger;
-
+    
     public void Subscribe(AgressiveNpc npc)
     {
         if (!_entityList.Contains(npc))
@@ -46,16 +48,23 @@ public class Game
     public void RunGame()
     {
         _logger.Log($"Starting game: {_player.Username} vs {_entityList.Count} enemies!");
+        
+        
 
         for (int i = 0; i < _entityList.Count; i++)
         {
             _logger.Log($"The fight №{i+1}: vs {_entityList[i].Name}");
+         
+            int distance = AgressiveNpc.AggressionArea(_entityList[i], _player.Position.x,_player.Position.y);
+            _logger.Log($"The distance is {distance}");
+            
 
             while (_player.HealthPoints > 0 && _entityList[i].HealthPoints > 0)
             {
-                Attack(_player, _entityList[i]);
+                Attack(_player, _entityList[i], distance);
             }
-            
+
+            _player.Kills++;
         }
 
         if (!_player.IsDead())
@@ -66,12 +75,22 @@ public class Game
         {
             _logger.Log("Game over! Player is dead!");
         }
+        
+        _logger.Log($"Total damage by Player is {_player.DamageInfo}");
+        _logger.Log($"Total kills is {_player.Kills}");
     }
 
-    private void Attack(Player player, AgressiveNpc npc)
+    private void Attack(Player player, AgressiveNpc npc, int distance)
     {
-        _logger.Log($"{player.Username} (Level: {player.Level}) attacks {npc.Name} ({npc.HealthPoints:F1} hp) with {player.DamagePoints} dmg.");
-        npc.GetDamage(player.DamagePoints);
+        if (!player.GetCurrentWeapon(distance))
+        {
+            _logger.Log($"{player.Username} не имеет подходящего оружия для дистанции {distance}!");
+            return;
+        }
+        
+        _logger.Log($"{player.Username} (Level: {player.Level}) attacks {npc.Name} ({npc.HealthPoints:F1} hp) with {player.TotalDamage} dmg and {player.Weapon?.Name} weapon.");
+        npc.GetDamage(player.TotalDamage);
+        player.DamageInfo += player.TotalDamage;
         _logger.Log($"{npc.Name} hp's after the attack: {npc.HealthPoints:F1}");
         if (npc.IsDead())
         {
@@ -79,16 +98,27 @@ public class Game
             player.GetExperience(npc.ExpGranted);
             return;
         }
-            
         
-        _logger.Log($"{npc.Name} hp's after the attack: {npc.HealthPoints:F1}");
         player.GetDamage(npc.DamagePoints);
         _logger.Log($"{player.Username} hp's after the attack: {player.HealthPoints:F1}");
     }
 }
 
-public class Player(string username)
+public class Player
 {
+    private readonly Inventory _inventory = new Inventory(20);
+    
+    public Player(string name)
+    {
+        Username = name;
+        // Добавляем стартовое оружие
+        _inventory.AddNewWeapon(new Bow());
+        _inventory.AddNewWeapon(new Staff());
+        _inventory.AddNewWeapon(new Sword());
+
+        GetCurrentWeapon(0);
+    }
+    
     private double _damagePoints = 50;
     
     private double _healthPoints = 100.0;
@@ -97,8 +127,43 @@ public class Player(string username)
 
     private double _experience = 0;
     
-    public int Level => _level;
+    private IWeapon? _currentWeapon;
+    
+    public int Distance { get; private set; }
+    
+    public double DamageInfo { get; set; }
 
+    public int Kills { get; set; } 
+    
+    public (double x, double y) Position { get; set; } = (0, 0);
+    
+    public int Level => _level;
+    
+    public double BaseDamage => _damagePoints;
+    public double WeaponDamage => _currentWeapon?.Damage ?? 0;
+    public double TotalDamage => BaseDamage + WeaponDamage;
+
+    public IWeapon? Weapon => _currentWeapon;
+    
+    public bool GetCurrentWeapon(int distanceCategory)
+    {
+        _currentWeapon = _inventory.GetWeapon(distanceCategory);
+        
+        if (_currentWeapon != null)
+        {
+            Distance = _currentWeapon.Distance;
+            return true;
+        }
+        
+        return false;
+    }
+    
+    public void AddNewWeaponToInventory(IWeapon? weapon)
+    {
+        _inventory.AddNewWeapon(weapon);
+    }
+    
+ 
     public void GetExperience(double exp)
     {
         _experience += exp;
@@ -108,7 +173,7 @@ public class Player(string username)
     
     public void LevelUp()
     {
-        for (var i = 0; i < _experience / 30.0; i++)
+        if (_experience >= 30.0)
         {
             _level += 1;
             _damagePoints += 5;
@@ -116,7 +181,6 @@ public class Player(string username)
         }
     }
     
-    public double DamagePoints => _damagePoints;
     
     public double HealthPoints
     {
@@ -128,7 +192,7 @@ public class Player(string username)
 
     public Guid Id { get; } = Guid.NewGuid();
     
-    public string Username { get; private set; } = username;
+    public string Username { get; private set; } 
     
     public void GetDamage(double damage)
     {

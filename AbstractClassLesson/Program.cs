@@ -3,6 +3,7 @@ using AbstractClassLesson.Game.Logs;
 using AbstractClassLesson.Persistence;
 
 
+
 var npcList = new List<AgressiveNpc>();
 
 var puck = EnemyFactory.CreateNpc("Puck", EnemyType.Bandit);
@@ -19,6 +20,8 @@ var player = new Player("m1naku")
 {
     HealthPoints = 150,
 };
+
+
 
 var fileLogger = new FileLogger();
 fileLogger.AddNewFilePath("C:/123/log.txt");
